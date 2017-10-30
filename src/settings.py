@@ -1,7 +1,7 @@
 """(c) All rights reserved. ECOLE POLYTECHNIQUE FEDERALE DE LAUSANNE, Switzerland, VPSI, 2017"""
 import os
 
-VERSION = "0.2.1"
+VERSION = "0.2.3"
 
 DATA_PATH = os.path.abspath(
     os.path.sep.join([
@@ -13,8 +13,10 @@ DATA_PATH = os.path.abspath(
     )
 )
 
+ENV_DIRS = ['logs', 'venv', 'jahia2wp']
 WP_DIRS = ['wp-admin', 'wp-content', 'wp-includes']
 WP_FILES = [
+    '.htaccess',
     'index.php',
     'license.txt',
     'readme.html',
@@ -37,7 +39,29 @@ WP_FILES = [
     'xmlrpc.php'
 ]
 
+WP_CONFIG_KEYS = [
+    'table_prefix',
+    'DB_NAME',
+    'DB_USER',
+    'DB_PASSWORD',
+    'DB_HOST',
+    'DB_CHARSET',
+    'DB_COLLATE',
+    'AUTH_KEY',
+    'SECURE_AUTH_KEY',
+    'LOGGED_IN_KEY',
+    'NONCE_KEY',
+    'AUTH_SALT',
+    'SECURE_AUTH_SALT',
+    'LOGGED_IN_SALT',
+    'NONCE_SALT',
+]
+
 OPENSHIFT_ENVS = [
+    # for testing purpose
+    "your-env",
+    "test",
+    # real ones
     "dev",
     "int",
     "ebreton",
