@@ -8,7 +8,7 @@ from utils import Utils
 from .models import WPException, WPUser, WPSite
 
 
-class WPRawConfig:
+class WPConfig:
     """ First object to implement some business logic
         - is the site installed? properly configured ?
 
@@ -185,9 +185,15 @@ class WPRawConfig:
         self.run_wp_cli(cmd)
         return user
 
+    def create_main_menu(self):
+        # create main menu
+        self.run_wp_cli('menu create Main')
+        # position the main menu at the top
+        self.run_wp_cli('menu location assign Main top')
 
-class WPThemeConfig(WPRawConfig):
-    """ Relies on WPRawConfig to get wp_site and run wp-cli.
+
+class WPThemeConfig(WPConfig):
+    """ Relies on WPConfig to get wp_site and run wp-cli.
         Overrides is_installed to check for the theme only
     """
 
@@ -217,8 +223,8 @@ class WPThemeConfig(WPRawConfig):
         return self.run_wp_cli('theme activate {}'.format(self.name))
 
 
-class WPPluginConfig(WPRawConfig):
-    """ Relies on WPRawConfig to get wp_site and run wp-cli.
+class WPPluginConfig(WPConfig):
+    """ Relies on WPConfig to get wp_site and run wp-cli.
         Overrides is_installed to check for the theme only
     """
 
@@ -238,10 +244,32 @@ class WPPluginConfig(WPRawConfig):
         # check if files are found in wp-content/plugins
         return os.path.isdir(self.path)
 
-    def install(self):
-        # copy files into wp-content/plugins
-        src_path = os.path.sep.join([DATA_PATH, self.PLUGINS_PATH, self.name])
-        shutil.copytree(src_path, self.path)
+    @property
+    def is_activate(self):
+        command = "plugin list --status=active --field=name --fomat=json"
+        return self.name in self.run_wp_cli(command)
+
+    def install(self, zip_path=None):
+        if zip_path is not None:
+            param = zip_path
+        else:
+            param = self.name
+        command = "plugin install {0} --activate".format(param)
+        self.run_wp_cli(command)
+
+    def config(self, config_data):
+        """
+            Config plugin via wp-cli.
+
+            "option_value" is the content of the plugin config
+            This content is generated outside jahia2wp script
+        """
+        command = "option add {} --autoload={} --format=json < {}".format(
+            config_data["options"]["option_name"],
+            config_data["options"]["autoload"],
+            config_data["options"]["option_value"]
+        )
+        self.run_wp_cli(command)
 
     def activate(self):
         # activation through wp-cli
